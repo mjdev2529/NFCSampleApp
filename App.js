@@ -2,12 +2,9 @@ import React, { useState } from 'react';
 import { StyleSheet, Text, View, Alert, Button } from 'react-native';
 import Header from './components/header';
 import { HCESession, NFCTagType4NDEFContentType, NFCTagType4 } from 'react-native-hce';
-import NfcManager, {NfcTech} from 'react-native-nfc-manager';
+import NfcManager, {NfcTech, Ndef} from 'react-native-nfc-manager';
 
 export default function App() {
-
-  // Pre-step, call this before any NFC operations
-  NfcManager.start();
 
   const [toggle, setToggle] = useState(true);
   const [toggleRead, setToggleRead] = useState(true);
@@ -48,6 +45,9 @@ export default function App() {
   }
 
   const readNdef = async () => {
+
+    // Pre-step, call this before any NFC operations
+    NfcManager.start();
     setToggleRead(toggleRead => !toggleRead);
     Alert.alert('Notice', 'NFC Scan enabled!');
 
@@ -56,7 +56,8 @@ export default function App() {
       await NfcManager.requestTechnology(NfcTech.Ndef);
       // the resolved tag object will contain `ndefMessage` property
       const tag = await NfcManager.getTag();
-      console.warn('Tag found', tag);
+      const ndefMsg = tag.ndefMessage;
+      Alert.alert('Tag found', Ndef.text.decodePayload(ndefMsg[0].payload));
     } catch (ex) {
       console.log('Oops!', ex);
     } finally {
@@ -69,6 +70,7 @@ export default function App() {
   const readNdefStop = async () => {
     NfcManager.cancelTechnologyRequest();
     setToggleRead(true);
+    NfcManager.stop();
   }
 
   const Separator = () => <View style={styles.separator} />;
@@ -86,7 +88,7 @@ export default function App() {
           <Separator/>
 
           {toggleRead?
-            <Button title='Scan a Tag' color="green" onPress={readNdef}></Button>
+            <Button title='Receive' color="green" onPress={readNdef}></Button>
             :
             <Button title='Cancel' color="red" onPress={readNdefStop}></Button>
           }
