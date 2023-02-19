@@ -2,9 +2,12 @@ import React, { useState } from 'react';
 import { StyleSheet, Text, View, Alert, Button } from 'react-native';
 import Header from './components/header';
 import { HCESession, NFCTagType4NDEFContentType, NFCTagType4 } from 'react-native-hce';
-import NfcManager, {NfcTech, Ndef} from 'react-native-nfc-manager';
+import NfcManager, {NfcTech} from 'react-native-nfc-manager';
 
 export default function App() {
+
+  // Pre-step, call this before any NFC operations
+  NfcManager.start();
 
   const [toggle, setToggle] = useState(true);
   const [toggleRead, setToggleRead] = useState(true);
@@ -31,7 +34,7 @@ export default function App() {
     Alert.alert('Notice', 'NFC Send enabled!');
     setToggle(toggle => !toggle);
     console.log('NFC Send Start')
-    listen
+    listen()
 
   }
 
@@ -45,9 +48,6 @@ export default function App() {
   }
 
   const readNdef = async () => {
-
-    // Pre-step, call this before any NFC operations
-    NfcManager.start();
     setToggleRead(toggleRead => !toggleRead);
     Alert.alert('Notice', 'NFC Scan enabled!');
 
@@ -57,7 +57,23 @@ export default function App() {
       // the resolved tag object will contain `ndefMessage` property
       const tag = await NfcManager.getTag();
       const ndefMsg = tag.ndefMessage;
-      Alert.alert('Tag found', Ndef.text.decodePayload(ndefMsg[0].payload));
+      const content = Ndef.text.decodePayload(ndefMsg[0].payload);
+      Alert.alert('Tag found', content);
+
+      // const dataString = "name:John,age:20,city:Texas";
+
+      // // Split the string into an array of strings
+      // const dataArray = dataString.split(",");
+  
+      // // Create a new object and assign values from the dataArray
+      // const dataObject = {};
+      // dataArray.forEach((data) => {
+      //   const [key, value] = data.split(":");
+      //   dataObject[key] = value;
+      // });
+  
+      // console.log(dataObject);
+
     } catch (ex) {
       console.log('Oops!', ex);
     } finally {
@@ -69,8 +85,8 @@ export default function App() {
 
   const readNdefStop = async () => {
     NfcManager.cancelTechnologyRequest();
-    setToggleRead(true);
     NfcManager.stop();
+    setToggleRead(true);
   }
 
   const Separator = () => <View style={styles.separator} />;
