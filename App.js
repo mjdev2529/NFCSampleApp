@@ -6,9 +6,6 @@ import NfcManager, {NfcTech} from 'react-native-nfc-manager';
 
 export default function App() {
 
-  // Pre-step, call this before any NFC operations
-  NfcManager.start();
-
   const [toggle, setToggle] = useState(true);
   const [toggleRead, setToggleRead] = useState(true);
 
@@ -24,7 +21,8 @@ export default function App() {
   const startSession = async () => {
     const tag = new NFCTagType4({
       type: NFCTagType4NDEFContentType.Text,
-      content: "Hello world",
+      // content: "Hello world",
+      content: "NAME:John,AGE:20,CITY:Texas",
       writable: false
     });
 
@@ -51,6 +49,9 @@ export default function App() {
     setToggleRead(toggleRead => !toggleRead);
     Alert.alert('Notice', 'NFC Scan enabled!');
 
+    // Pre-step, call this before any NFC operations
+    NfcManager.start();
+
     try {
       // register for the NFC tag with NDEF in it
       await NfcManager.requestTechnology(NfcTech.Ndef);
@@ -58,21 +59,19 @@ export default function App() {
       const tag = await NfcManager.getTag();
       const ndefMsg = tag.ndefMessage;
       const content = Ndef.text.decodePayload(ndefMsg[0].payload);
-      Alert.alert('Tag found', content);
+      // Alert.alert('Tag found', content);
 
-      // const dataString = "name:John,age:20,city:Texas";
-
-      // // Split the string into an array of strings
-      // const dataArray = dataString.split(",");
+      // Split the string into an array of strings
+      const dataArray = content.split(",");
   
-      // // Create a new object and assign values from the dataArray
-      // const dataObject = {};
-      // dataArray.forEach((data) => {
-      //   const [key, value] = data.split(":");
-      //   dataObject[key] = value;
-      // });
+      // Create a new object and assign values from the dataArray
+      const dataObject = {};
+      dataArray.forEach((data) => {
+        const [key, value] = data.split(":");
+        dataObject[key] = value;
+      });
   
-      // console.log(dataObject);
+      Alert.alert('Tag found', dataObject);
 
     } catch (ex) {
       console.log('Oops!', ex);
